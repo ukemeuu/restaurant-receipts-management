@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Receipt Management System for Pot of Jollof - Track receipts, manage suppliers, and analyze spending">
+  <meta name="keywords" content="receipt management, restaurant, supplier tracking, expense management">
+  <title>Receipt Manager - Pot of Jollof</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">
+        <div class="logo-icon">🧾</div>
+        <div class="logo-text">
+          <h1>Receipt Manager</h1>
+          <p>Pot of Jollof</p>
+        </div>
+      </div>
+      <nav class="nav">
+        <button class="nav-btn active" data-view="dashboard">📊 Dashboard</button>
+        <button class="nav-btn" data-view="receipts">🧾 Receipts</button>
+        <button class="nav-btn" data-view="suppliers">👥 Suppliers</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Dashboard View -->
+    <div id="dashboard-view" class="view">
+      <!-- Stats Cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">🧾</div>
+          <div class="stat-label">Total Receipts</div>
+          <div class="stat-value" id="total-receipts">0</div>
+        </div>
+        <div class="stat-card secondary">
+          <div class="stat-icon">💰</div>
+          <div class="stat-label">Total Spending</div>
+          <div class="stat-value" id="total-spending">$0</div>
+        </div>
+        <div class="stat-card accent">
+          <div class="stat-icon">👥</div>
+          <div class="stat-label">Active Suppliers</div>
+          <div class="stat-value" id="total-suppliers">0</div>
+        </div>
+      </div>
+
+      <!-- Top Suppliers -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🏆 Top Suppliers</h2>
+        </div>
+        <div class="supplier-list" id="top-suppliers-list">
+          <p class="text-center" style="color: var(--text-muted);">No suppliers yet. Add your first receipt to get started!</p>
+        </div>
+      </div>
+
+      <!-- Recent Receipts -->
+      <div class="card mt-3">
+        <div class="card-header">
+          <h2 class="card-title">📋 Recent Receipts</h2>
+          <button class="btn btn-primary" id="add-receipt-btn">
+            ➕ Add Receipt
+          </button>
+        </div>
+        <div class="receipt-grid" id="recent-receipts">
+          <p class="text-center" style="color: var(--text-muted);">No receipts yet. Click "Add Receipt" to get started!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Receipts View -->
+    <div id="receipts-view" class="view hidden">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">🧾 All Receipts</h2>
+          <button class="btn btn-primary" id="add-receipt-btn-2">
+            ➕ Add Receipt
+          </button>
+        </div>
+        
+        <!-- Search and Filters -->
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            class="search-input" 
+            id="receipt-search" 
+            placeholder="Search by supplier, receipt number, or date..."
+          >
+        </div>
+
+        <div class="receipt-grid" id="all-receipts">
+          <p class="text-center" style="color: var(--text-muted);">No receipts found.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Suppliers View -->
+    <div id="suppliers-view" class="view hidden">
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">👥 Manage Suppliers</h2>
+          <button class="btn btn-primary" id="add-supplier-btn">
+            ➕ Add Supplier
+          </button>
+        </div>
+
+        <div class="search-bar">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            class="search-input" 
+            id="supplier-search" 
+            placeholder="Search suppliers..."
+          >
+        </div>
+
+        <div class="supplier-list" id="suppliers-list">
+          <p class="text-center" style="color: var(--text-muted);">No suppliers yet. Add your first supplier!</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add Receipt Modal -->
+  <div id="receipt-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">➕ Add Receipt</h3>
+        <button class="modal-close" id="close-receipt-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="receipt-form">
+          <!-- Image Upload -->
+          <div class="form-group">
+            <label class="form-label">Receipt Image</label>
+            <div class="image-upload" id="image-upload-area">
+              <input 
+                type="file" 
+                id="receipt-image" 
+                accept="image/*" 
+                capture="environment"
+                style="display: none;"
+              >
+              <div id="upload-placeholder">
+                <div class="upload-icon">📷</div>
+                <p class="upload-text">Click to upload or take a photo</p>
+              </div>
+              <img id="image-preview" class="image-preview hidden" alt="Receipt preview">
+            </div>
+          </div>
+
+          <!-- Supplier -->
+          <div class="form-group">
+            <label class="form-label" for="receipt-supplier">Supplier</label>
+            <div class="autocomplete-container">
+              <input 
+                type="text" 
+                class="form-input" 
+                id="receipt-supplier" 
+                placeholder="Start typing supplier name..."
+                autocomplete="off"
+                required
+              >
+              <div class="autocomplete-dropdown hidden" id="supplier-dropdown"></div>
+            </div>
+          </div>
+
+          <!-- Receipt Number -->
+          <div class="form-group">
+            <label class="form-label" for="receipt-number">Receipt Number</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              id="receipt-number" 
+              placeholder="e.g., RCP-001234"
+              required
+            >
+          </div>
+
+          <!-- Amount -->
+          <div class="form-group">
+            <label class="form-label" for="receipt-amount">Amount ($)</label>
+            <input 
+              type="number" 
+              class="form-input" 
+              id="receipt-amount" 
+              placeholder="0.00"
+              step="0.01"
+              min="0"
+              required
+            >
+          </div>
+
+          <!-- Date -->
+          <div class="form-group">
+            <label class="form-label" for="receipt-date">Date</label>
+            <input 
+              type="date" 
+              class="form-input" 
+              id="receipt-date" 
+              required
+            >
+          </div>
+
+          <!-- Notes -->
+          <div class="form-group">
+            <label class="form-label" for="receipt-notes">Notes (Optional)</label>
+            <textarea 
+              class="form-textarea" 
+              id="receipt-notes" 
+              placeholder="Add any additional notes..."
+            ></textarea>
+          </div>
+
+          <div class="flex gap-2">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">
+              💾 Save Receipt
+            </button>
+            <button type="button" class="btn btn-secondary" id="cancel-receipt">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Supplier Modal -->
+  <div id="supplier-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">➕ Add Supplier</h3>
+        <button class="modal-close" id="close-supplier-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <form id="supplier-form">
+          <div class="form-group">
+            <label class="form-label" for="supplier-name">Supplier Name</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              id="supplier-name" 
+              placeholder="e.g., Fresh Farms Market"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="supplier-category">Category</label>
+            <select class="form-select" id="supplier-category" required>
+              <option value="">Select category...</option>
+              <option value="Produce">🥬 Produce</option>
+              <option value="Meat & Seafood">🥩 Meat & Seafood</option>
+              <option value="Dairy">🥛 Dairy</option>
+              <option value="Dry Goods">🌾 Dry Goods</option>
+              <option value="Beverages">🥤 Beverages</option>
+              <option value="Spices & Seasonings">🌶️ Spices & Seasonings</option>
+              <option value="Packaging">📦 Packaging</option>
+              <option value="Equipment">🔧 Equipment</option>
+              <option value="Other">📋 Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="supplier-contact">Contact (Optional)</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              id="supplier-contact" 
+              placeholder="Phone or email"
+            >
+          </div>
+
+          <div class="flex gap-2">
+            <button type="submit" class="btn btn-primary" style="flex: 1;">
+              💾 Save Supplier
+            </button>
+            <button type="button" class="btn btn-secondary" id="cancel-supplier">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- View Receipt Modal -->
+  <div id="view-receipt-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">🧾 Receipt Details</h3>
+        <button class="modal-close" id="close-view-receipt-modal">✕</button>
+      </div>
+      <div class="modal-body" id="receipt-detail-content">
+        <!-- Content will be populated dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
